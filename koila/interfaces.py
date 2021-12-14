@@ -129,7 +129,8 @@ def mem(tensor: TensorLike) -> int:
     dt = dtyp(tensor)
     numel = tensor.numel()
 
-    if (batch := bat(tensor)) is not None:
+    batch = bat(tensor)
+    if batch is not None:
         numel //= batch.value
 
     return constants.MEMORY_BYTES[dt] * numel

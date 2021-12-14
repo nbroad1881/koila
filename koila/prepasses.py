@@ -142,7 +142,8 @@ def symmetric(
         raise ValueError
 
     batch = None
-    if (b := interfaces.bat(input)) == interfaces.bat(other):
+    b = interfaces.bat(input)
+    if b == interfaces.bat(other):
         batch = b
 
     return PrePass(shape, same([input, other], batch, trivial))
@@ -188,7 +189,8 @@ def mean(
 
     (shape, dimensions) = shapes.reduce_dims(input.size(), dim, keepdim)
 
-    if (b := interfaces.bat(input)) in dimensions:
+    b = interfaces.bat(input)
+    if b in dimensions:
         batch = None
 
         def mean_callback(input: Tensor, *args: Any, **kwargs: Any) -> Reducer:
@@ -210,7 +212,8 @@ def permute(input: TensorLike, /, *dims: int, **kwargs: Any) -> PrePass:
     mapping = dict(enumerate(dims))
 
     batch = None
-    if (b := interfaces.bat(input)) is not None:
+    b = interfaces.bat(input)
+    if b is not None:
         batch = b.map(lambda x: mapping[x])
 
     return PrePass(shapes.permute(input.size(), *dims), same([input], batch, trivial))
@@ -222,7 +225,8 @@ def reshape(input: TensorLike, /, *shape: int, **kwargs: Any) -> PrePass:
     shape = shapes.reshape(input.size(), *shape)
 
     batch = None
-    if (b := interfaces.bat(input)) is not None:
+    b = interfaces.bat(input)
+    if b is not None:
         if b in shape:
             batch = b.map(shape.index)
 
@@ -235,7 +239,8 @@ def view(input: TensorLike, /, *shape: int, **kwargs: Any) -> PrePass:
     shape = shapes.view(input.size(), *shape)
 
     batch = None
-    if (b := interfaces.bat(input)) is not None:
+    b = interfaces.bat(input)
+    if b is not None:
         if b in shape:
             batch = b.map(shape.index)
 
@@ -266,7 +271,8 @@ def flatten(
     )
 
     batch = None
-    if (b := interfaces.bat(input)) is not None:
+    b = interfaces.bat(input)
+    if b is not None:
         if not (start_dim <= b.index <= end_dim):
             batch = b
 
@@ -279,7 +285,8 @@ def tranpose(
     mute_unused_args(*args, **kwargs)
 
     batch = None
-    if (b := interfaces.bat(input)) is not None:
+    b = interfaces.bat(input)
+    if b is not None:
         batch = b.map(lambda x: {dim0: dim1, dim1: dim0}[x])
 
     return PrePass(
@@ -318,7 +325,8 @@ def select(
         sliced_idx = ()
 
     batch = None
-    if (b := interfaces.bat(input)) != dim:
+    b = interfaces.bat(input)
+    if b != dim:
         batch = b
 
     return PrePass(
@@ -344,7 +352,8 @@ def matmul(
 ) -> PrePass:
     mute_unused_args(*args, **kwargs)
 
-    if (batch := interfaces.bat(input)) != interfaces.bat(other):
+    batch = interfaces.bat(input)
+    if batch != interfaces.bat(other):
         raise UnsupportedError
 
     return PrePass(
@@ -364,7 +373,8 @@ def loss(
     mute_unused_args(*args, **kwargs)
 
     # Currently only supports tensors of the same batch size.
-    if (batch := interfaces.bat(input)) != interfaces.bat(target):
+    batch = interfaces.bat(input)
+    if batch != interfaces.bat(target):
         raise UnsupportedError
 
     output_shape = {
@@ -420,7 +430,8 @@ def cat(
         raise UnsupportedError
 
     batch = None
-    if (b := interfaces.bat(tensors[0])) != dim:
+    b = interfaces.bat(tensors[0])
+    if b != dim:
         batch = b
 
     concat_size = sum(t[dim] for t in shapes)
@@ -438,7 +449,8 @@ def pad(input: TensorLike, pad: List[int], *args: Any, **kwargs: Any) -> PrePass
     if len(pad) % 2 == 1:
         raise ValueError(f"Length of pad must be divisible by 2. Got {len(pad)}.")
 
-    if len(pad) > (maxlen := len(shapes) * 2):
+    maxlen = len(shapes) * 2
+    if len(pad) > maxlen:
         raise ValueError(
             f"Padding is way too long. Got {pad}, but {maxlen} is the maximum dimensions allowed."
         )

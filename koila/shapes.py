@@ -54,8 +54,8 @@ def coerce(
             return input
 
     if not broadcast:
-        if (shape := input) == other:
-            return shape
+        if input == other:
+            return input
         else:
             return None
 

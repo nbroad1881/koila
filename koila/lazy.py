@@ -91,11 +91,13 @@ class Evaluation(RunnableTensor):
 
         result = self.func(*real_args, **real_kwargs)
 
+        reducer = self.prepass.reducer()
+
         # Checks the shape only when pre-passing.
         # If partial is supplemented, it means the tensors are really evaluated
         if partial is None:
             assert self.prepass.shape == result.shape, [self.prepass, result.shape]
-        elif (reducer := self.prepass.reducer()) is None:
+        elif reducer is None:
             raise UnsupportedError("Cannot safely parallelize.")
         else:
             logger.debug(
@@ -358,10 +360,12 @@ class LazyTensor(RunnableTensor):
         method = getattr(Tensor, name)
         wrapper = functools.wraps(method)
 
-        if (custom_impl := CUSTOM_OPS.lookup_method(name)) is not None:
+        custom_impl = CUSTOM_OPS.lookup_method(name)
+        shape_impl = SHAPE_OPS.lookup_method(name)
+        if custom_impl is not None:
             logger.debug("A custom method definition is found.")
             partial = functools.partial(custom_impl, self)
-        elif (shape_impl := SHAPE_OPS.lookup_method(name)) is not None:
+        elif shape_impl is not None:
             logger.debug("A custom shape method is found. Lazy evaluation.")
             partial = functools.partial(lazy_forward, method, shape_impl, self)
         else:
@@ -388,10 +392,12 @@ class LazyTensor(RunnableTensor):
 
         name = func.__name__
 
-        if (custom_impl := CUSTOM_OPS.lookup_function(name)) is not None:
+        custom_impl = CUSTOM_OPS.lookup_function(name)
+        shape_impl = SHAPE_OPS.lookup_function(name)
+        if custom_impl is not None:
             logger.debug("A custom function definition is found.")
             return custom_impl(*args, **kwargs)
-        elif (shape_impl := SHAPE_OPS.lookup_function(name)) is not None:
+        elif shape_impl is not None:
             logger.debug("A custom shape function is found. Lazy evaluation.")
             return lazy_forward(func, shape_impl, *args, **kwargs)
         else:
@@ -537,11 +543,13 @@ def _min(input: TensorLike, *args: Any, **kwargs: Any) -> TensorLike | _ValIdx:
     if len(args) == len(kwargs) == 0:
         return lazy_forward(torch.min, prepasses.reduce_dims, input)
 
+    first_arg = args[0]
+    other = kwargs.get("other", None)
     if (
         len(args) == 1
-        and isinstance((other := args[0]), (Tensor, LazyTensor))
+        and isinstance(first_arg, (Tensor, LazyTensor))
         or len(kwargs) == 1
-        and (other := kwargs.get("other", None) is not None)
+        and other is not None
     ):
         return lazy_forward(torch.minimum, prepasses.symmetric, input, other)
 
@@ -571,11 +579,13 @@ def _max(input: TensorLike, *args: Any, **kwargs: Any) -> TensorLike | _ValIdx:
     if len(args) == len(kwargs) == 0:
         return lazy_forward(torch.max, prepasses.reduce_dims, input)
 
+    first_arg = args[0]
+    other = kwargs.get("other", None)
     if (
         len(args) == 1
-        and isinstance((other := args[0]), (Tensor, LazyTensor))
+        and isinstance(first_arg, (Tensor, LazyTensor))
         or len(kwargs) == 1
-        and (other := kwargs.get("other", None) is not None)
+        and other is not None
     ):
         return lazy_forward(torch.maximum, prepasses.symmetric, input, other)
 
@@ -618,12 +628,14 @@ class MethodFunction(Generic[T]):
     @staticmethod
     def _search(key: str, *dbs: Dict[str, T]) -> T | None:
         for db in dbs:
-            if (value := db.get(key)) is not None:
+            value = db.get(key)
+            if value is not None:
                 return value
         return None
 
     def lookup(self, key: str, *dbs: Dict[str, T]) -> T | None:
-        if (result := self._search(key, *dbs)) is not None:
+        result = self._search(key, *dbs)
+        if result is not None:
             return result
 
         if key.startswith("_"):

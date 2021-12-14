@@ -9,12 +9,9 @@ from dataclasses import dataclass
 from typing import (
     Any,
     List,
-    Literal,
-    Protocol,
     Sequence,
     Tuple,
     overload,
-    runtime_checkable,
 )
 
 from rich.logging import RichHandler
@@ -30,13 +27,13 @@ logger = logging.getLogger(__name__)
 logger.addHandler(RichHandler())
 
 
-class CallBack(Protocol):
+class CallBack:
     @abstractmethod
     def __call__(self, *args: Any, **kwargs: Any) -> Reducer:
         ...
 
 
-class Reducer(Protocol):
+class Reducer:
     @abstractmethod
     def __call__(self, result: Tensor, /) -> Tensor:
         ...
@@ -95,8 +92,8 @@ class PrePass:
         return self.metadata.reducer
 
 
-@runtime_checkable
-class PrePassFunc(Protocol):
+
+class PrePassFunc:
     @abstractmethod
     def __call__(self, *args: Any, **kwargs: Any) -> PrePass:
         ...
@@ -360,7 +357,7 @@ def loss(
     input: TensorLike,
     target: TensorLike,
     /,
-    reduction: Literal["none", "mean", "sum"] = "mean",
+    reduction="mean",
     *args: Any,
     **kwargs: Any,
 ) -> PrePass:

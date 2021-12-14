@@ -8,12 +8,10 @@ from typing import (
     Callable,
     Dict,
     NamedTuple,
-    Protocol,
     Tuple,
     TypeVar,
     Union,
     overload,
-    runtime_checkable,
 )
 
 from torch import Tensor
@@ -27,15 +25,13 @@ T = TypeVar("T", covariant=True)
 V = TypeVar("V", contravariant=True)
 
 
-@runtime_checkable
-class Runnable(Protocol[T]):
+class Runnable():
     @abstractmethod
     def run(self) -> T:
         ...
 
 
-@runtime_checkable
-class TensorMixin(Protocol):
+class TensorMixin():
     @overload
     @abstractmethod
     def size(self) -> Tuple[int, ...]:
@@ -79,8 +75,7 @@ class BatchInfo(NamedTuple):
         return BatchInfo(index, self.value)
 
 
-@runtime_checkable
-class RunnableTensor(Runnable[Tensor], TensorMixin, Protocol):
+class RunnableTensor(Runnable[Tensor], TensorMixin):
     @abstractmethod
     def batch(self) -> BatchInfo | None:
         ...

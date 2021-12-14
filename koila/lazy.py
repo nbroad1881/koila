@@ -18,7 +18,6 @@ from typing import (
     Tuple,
     Type,
     TypeVar,
-    final,
     overload,
 )
 
@@ -59,7 +58,6 @@ class LazyFunction(Generic[V]):
             return functools.partial(self, obj)
 
 
-@final
 @dataclass(init=False)
 class Evaluation(RunnableTensor):
     func: Callable[..., Tensor]
@@ -148,7 +146,6 @@ class Evaluation(RunnableTensor):
         return self.prepass.batch()
 
 
-@final
 @dataclass(init=False, repr=False)
 class LazyTensor(RunnableTensor):
     _data: TensorLike

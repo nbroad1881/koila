@@ -35,7 +35,7 @@ class CallBack:
 
 class Reducer:
     @abstractmethod
-    def __call__(self, result: Tensor, /) -> Tensor:
+    def __call__(self, result: Tensor) -> Tensor:
         ...
 
 
@@ -125,14 +125,14 @@ def same(
     return MetaData(max_dtype, devices[0], batch, reducer)
 
 
-def identity(input: TensorLike, /, *args: Any, **kwargs: Any) -> PrePass:
+def identity(input: TensorLike, *args: Any, **kwargs: Any) -> PrePass:
     mute_unused_args(*args, **kwargs)
 
     return PrePass(input.size(), same([input], interfaces.bat(input), trivial))
 
 
 def symmetric(
-    input: TensorLike, other: TensorLike, /, *args: Any, **kwargs: Any
+    input: TensorLike, other: TensorLike, *args: Any, **kwargs: Any
 ) -> PrePass:
     mute_unused_args(*args, **kwargs)
 
@@ -151,7 +151,6 @@ def symmetric(
 
 def reduce_dims(
     input: TensorLike,
-    /,
     dim: int | Tuple[int, ...] | None = None,
     keepdim: bool = False,
     *args: Any,
@@ -171,7 +170,7 @@ def reduce_dims(
     return PrePass(shape, same([input], batch, reducer))
 
 
-def scalars(input: TensorLike, /, *args: Any, **kwargs: Any) -> PrePass:
+def scalars(input: TensorLike, *args: Any, **kwargs: Any) -> PrePass:
     mute_unused_args(*args, **kwargs)
 
     return reduce_dims(input, tuple(range(input.dim())))
@@ -179,7 +178,6 @@ def scalars(input: TensorLike, /, *args: Any, **kwargs: Any) -> PrePass:
 
 def mean(
     input: TensorLike,
-    /,
     dim: int | Tuple[int, ...] | None = None,
     keepdim: bool = False,
     *args: Any,
@@ -206,7 +204,7 @@ def mean(
     return PrePass(shape, same([input], batch, reducer))
 
 
-def permute(input: TensorLike, /, *dims: int, **kwargs: Any) -> PrePass:
+def permute(input: TensorLike, *dims: int, **kwargs: Any) -> PrePass:
     mute_unused_args(**kwargs)
 
     mapping = dict(enumerate(dims))
@@ -219,7 +217,7 @@ def permute(input: TensorLike, /, *dims: int, **kwargs: Any) -> PrePass:
     return PrePass(shapes.permute(input.size(), *dims), same([input], batch, trivial))
 
 
-def reshape(input: TensorLike, /, *shape: int, **kwargs: Any) -> PrePass:
+def reshape(input: TensorLike, *shape: int, **kwargs: Any) -> PrePass:
     mute_unused_args(**kwargs)
 
     shape = shapes.reshape(input.size(), *shape)
@@ -233,7 +231,7 @@ def reshape(input: TensorLike, /, *shape: int, **kwargs: Any) -> PrePass:
     return PrePass(shape, same([input], batch, trivial))
 
 
-def view(input: TensorLike, /, *shape: int, **kwargs: Any) -> PrePass:
+def view(input: TensorLike, *shape: int, **kwargs: Any) -> PrePass:
     mute_unused_args(**kwargs)
 
     shape = shapes.view(input.size(), *shape)
@@ -249,7 +247,6 @@ def view(input: TensorLike, /, *shape: int, **kwargs: Any) -> PrePass:
 
 def flatten(
     input: TensorLike,
-    /,
     start_dim: int = 0,
     end_dim: int = -1,
     *args: Any,
@@ -280,7 +277,7 @@ def flatten(
 
 
 def tranpose(
-    input: TensorLike, dim0: int, dim1: int, /, *args: Any, **kwargs: Any
+    input: TensorLike, dim0: int, dim1: int, *args: Any, **kwargs: Any
 ) -> PrePass:
     mute_unused_args(*args, **kwargs)
 
@@ -298,7 +295,6 @@ def select(
     input: TensorLike,
     dim: int | ... | None,
     index: int | Tensor,
-    /,
     *args: Any,
     **kwargs: Any,
 ) -> PrePass:
@@ -336,7 +332,7 @@ def select(
 
 
 def embedding(
-    input: TensorLike, weight: TensorLike, /, *args: Any, **kwargs: Any
+    input: TensorLike, weight: TensorLike, *args: Any, **kwargs: Any
 ) -> PrePass:
     mute_unused_args(*args, **kwargs)
 
@@ -348,7 +344,7 @@ def embedding(
 
 
 def matmul(
-    input: TensorLike, other: TensorLike, /, *args: Any, **kwargs: Any
+    input: TensorLike, other: TensorLike, *args: Any, **kwargs: Any
 ) -> PrePass:
     mute_unused_args(*args, **kwargs)
 
@@ -365,7 +361,6 @@ def matmul(
 def loss(
     input: TensorLike,
     target: TensorLike,
-    /,
     reduction="mean",
     *args: Any,
     **kwargs: Any,

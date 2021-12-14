@@ -75,7 +75,7 @@ class BatchInfo(NamedTuple):
         return BatchInfo(index, self.value)
 
 
-class RunnableTensor(Runnable[Tensor], TensorMixin):
+class RunnableTensor(Runnable, TensorMixin):
     @abstractmethod
     def batch(self) -> BatchInfo | None:
         ...
@@ -151,7 +151,7 @@ def run(val: RunnableTensor, partial: Tuple[int, int] | None = None) -> Tensor:
 
 
 @overload
-def run(val: Runnable[E], partial: Tuple[int, int] | None = None) -> E:
+def run(val: Runnable, partial: Tuple[int, int] | None = None) -> E:
     ...
 
 

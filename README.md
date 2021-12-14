@@ -1,5 +1,7 @@
 # 🐨 Koila
 
+## This fork works on python 3.7 (Kaggle and Colab)
+
 > Koila solves `CUDA error: out of memory error` painlessly.
 > Fix it with just one line of code, and forget it.
 
